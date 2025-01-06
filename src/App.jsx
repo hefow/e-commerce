@@ -109,6 +109,10 @@ function App() {
                 element={<ProtectedRoute element={<NewProduct />} />}
               />
               <Route
+                path="/products/:id"
+                element={<ProtectedRoute element={<NewProduct />} />}
+              />
+              <Route
                 path="/products"
                 element={<ProductList />}
               />

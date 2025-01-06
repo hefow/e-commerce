@@ -1,28 +1,49 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-export default function Login({onLogin}) {
+export default function Login({ onLogin }) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
+  const [error, setError] = useState(null); // To display error messages
+  const navigate = useNavigate();
+
+  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle sign-in logic here
-    console.log('Sign in data:', formData);
-  };
-   const navigate = useNavigate();
+    
+    // Prepare the login data
+    const { email, password } = formData;
 
-   const handleLogin = () => {
-   onLogin(); // Update authentication state
-   navigate("/"); // Redirect to dashboard
-   };
+    try {
+      // Make API call to login endpoint
+      const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
+      
+      // Handle successful login
+      const { token, user } = response.data;
+      // Store the token in localStorage or sessionStorage
+      localStorage.setItem('token', token);
+
+      // Update authentication state (passed as prop onLogin)
+      onLogin(user);
+
+      // Redirect to dashboard
+      navigate('/');
+    } catch (err) {
+      // Handle error if login fails
+      setError('Invalid email or password');
+      console.error(err);
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -35,8 +56,11 @@ export default function Login({onLogin}) {
             </h2>
           </div>
 
+          {/* Show error if login fails */}
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+
           <div className="mt-8">
-            <form className="space-y-6" onSubmit={handleLogin}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email address
