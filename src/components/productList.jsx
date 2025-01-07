@@ -13,10 +13,12 @@ const ProductList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const navigate = useNavigate(); // Hook for navigation
 
+  // Fetch products when the component mounts
   useEffect(() => {
     loadProducts();
   }, []);
 
+  // Debounce search input for 500ms
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       filterProducts(searchTerm);
@@ -25,6 +27,7 @@ const ProductList = () => {
     return () => clearTimeout(timeoutId); // Cleanup timeout on component unmount or search term change
   }, [searchTerm, products]);
 
+  // Function to fetch products from the backend
   const loadProducts = async () => {
     setLoading(true);
     try {
@@ -45,6 +48,7 @@ const ProductList = () => {
     }
   };
 
+  // Function to filter products based on search term
   const filterProducts = (term) => {
     if (!term) {
       setFilteredProducts(products); // Show all products if no search term
@@ -57,6 +61,7 @@ const ProductList = () => {
     }
   };
 
+  // Function to handle search input change
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -66,10 +71,10 @@ const ProductList = () => {
     setIsModalOpen(true);
   };
 
-  // Function to close the modal
+  // Function to close the modal and refresh the product list
   const closeModal = () => {
     setIsModalOpen(false);
-    loadProducts(); // Refresh the product list after adding a new product
+    loadProducts(); // Refresh the product list after adding/updating a product
   };
 
   // Function to delete a product

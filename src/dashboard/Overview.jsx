@@ -1,4 +1,5 @@
 import React from "react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 function Overview() {
   // Mock data for stats (replace with actual data or API call)
@@ -15,17 +16,28 @@ function Overview() {
     },
   };
 
-  const monthlyData = [
-    { month: "Jan", value: 65 },
-    { month: "Feb", value: 84 },
-    { month: "Mar", value: 45 },
-    { month: "Apr", value: 67 },
-    { month: "May", value: 89 },
-    { month: "Jun", value: 76 },
+  // Updated mock data for Pie Chart (Product distribution by category)
+  const productDistribution = [
+    { name: "Mobiles", value: 400 },
+    { name: "Clothes", value: 300 },
+    { name: "Watches", value: 200 },
+    { name: "Laptops", value: 100 },
   ];
 
+  // Mock data for Bar Chart (Top-selling products)
+  const topSellingProducts = [
+    { name: "iPhone 15", sales: 120 },
+    { name: "Samsung Galaxy S22", sales: 90 },
+    { name: "MacBook Pro", sales: 80 },
+    { name: "Sony Headphones", sales: 70 },
+    { name: "Nike Shoes", sales: 60 },
+  ];
+
+  // Colors for Pie Chart
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 ">
+    <div className="grid gap-4 md:grid-cols-2">
       {/* Products Card */}
       <div className="rounded-lg bg-white p-6 shadow-lg">
         <div className="flex items-center justify-between">
@@ -114,27 +126,44 @@ function Overview() {
         </div>
       </div>
 
-      {/* Monthly Chart */}
+      {/* Pie Chart - Product Distribution by Category */}
       <div className="col-span-full rounded-lg bg-white p-6 shadow-lg">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Monthly Overview</h3>
-          <select className="rounded-md border border-gray-300 px-3 py-1 text-sm">
-            <option>Last 6 months</option>
-            <option>Last 12 months</option>
-            <option>Last 30 days</option>
-          </select>
-        </div>
-        <div className="mt-4 flex h-64 items-end justify-between space-x-2">
-          {monthlyData.map((data, index) => (
-            <div key={index} className="flex w-full flex-col items-center">
-              <div
-                className="w-full rounded-t bg-blue-500 transition-all hover:bg-blue-600"
-                style={{ height: `${data.value}%` }}
-              ></div>
-              <span className="mt-2 text-xs text-gray-500">{data.month}</span>
-            </div>
-          ))}
-        </div>
+        <h3 className="mb-4 text-lg font-semibold">Product Distribution by Category</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={productDistribution}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={100}
+              fill="#8884d8"
+              paddingAngle={5}
+              dataKey="value"
+              label
+            >
+              {productDistribution.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Bar Chart - Top Selling Products */}
+      <div className="col-span-full rounded-lg bg-white p-6 shadow-lg">
+        <h3 className="mb-4 text-lg font-semibold">Top Selling Products</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={topSellingProducts}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="sales" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

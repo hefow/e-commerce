@@ -3,28 +3,28 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 
 function NewProduct({ onClose }) {
-  const { id } = useParams(); // Get the product ID from the URL
-  const navigate = useNavigate(); // Hook for navigation
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     description: "",
     category: "",
-    image: null, // File upload handling
+    image: null,
     stock: "",
   });
 
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
-  // Fetch categories and product details (if editing)
   useEffect(() => {
     fetchCategories();
     if (id) {
-      fetchProductDetails(); // Fetch product details if editing
+      fetchProductDetails();
     } else {
-      // Clear form data if creating a new product
       setFormData({
         name: "",
         price: "",
@@ -33,6 +33,7 @@ function NewProduct({ onClose }) {
         image: null,
         stock: "",
       });
+      setImagePreview(null);
     }
   }, [id]);
 
@@ -51,20 +52,25 @@ function NewProduct({ onClose }) {
   };
 
   const fetchProductDetails = async () => {
-    if (!id) return; // Don't attempt to fetch product details if there's no ID
+    if (!id) return;
 
     try {
       const response = await axios.get(`http://localhost:3000/api/products/${id}`);
-      console.log("API Response:", response.data); // Debugging log
+      console.log("API Response:", response.data);
       const product = response.data.product;
+
       setFormData({
         name: product.name,
         price: product.price,
         description: product.description,
-        category: product.category?._id || "", // Fallback to empty string if category is undefined
-        image: product.image, // Ensure this matches the backend response
+        category: product.category?._id || "",
+        image: product.image,
         stock: product.stock,
       });
+
+      if (product.image) {
+        setImagePreview(product.image);
+      }
     } catch (error) {
       console.error("Error fetching product details:", error);
       setError("Failed to load product details.");
@@ -73,10 +79,54 @@ function NewProduct({ onClose }) {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData({
-      ...formData,
-      [name]: files ? files[0] : value, // Handle files separately
-    });
+
+    if (name === "image" && files && files[0]) {
+      const file = files[0];
+      setFormData({
+        ...formData,
+        image: file,
+      });
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+
+    // Clear validation errors when the user starts typing
+    setValidationErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
+    }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+
+    // Validate product name
+    if (!formData.name.trim()) {
+      errors.name = "Product name is required.";
+    } else if (!/^[A-Za-z][A-Za-z0-9\s]*$/.test(formData.name)) {
+      errors.name = "Product name must start with a letter and can include numbers at the end.";
+    }
+
+    // Validate price
+    if (!formData.price) {
+      errors.price = "Price is required.";
+    } else if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
+      errors.price = "Price must be a valid positive number.";
+    }
+
+    // Validate stock
+    if (!formData.stock) {
+      errors.stock = "Stock is required.";
+    } else if (isNaN(formData.stock) || parseInt(formData.stock) < 0) {
+      errors.stock = "Stock must be a valid non-negative number.";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0; // Return true if no errors
   };
 
   const handleSubmit = async (e) => {
@@ -84,39 +134,36 @@ function NewProduct({ onClose }) {
     setError(null);
     setSuccess(null);
 
+    if (!validateForm()) {
+      return; // Stop submission if validation fails
+    }
+
     try {
       const form = new FormData();
 
-      // Append all fields except the image
       for (const key in formData) {
         if (key !== "image" && formData[key] !== null && formData[key] !== undefined) {
-          form.append(key, formData[key]); // Append non-empty fields
+          form.append(key, formData[key]);
         }
       }
 
-      // Handle the image field separately
       if (formData.image instanceof File) {
-        form.append("image", formData.image); // Append the new image file
-      } else if (formData.image === null || formData.image === "") {
-        form.append("image", ""); // Send an empty value if no image is provided
+        form.append("image", formData.image);
+      } else if (formData.image && typeof formData.image === "string") {
+        form.append("image", formData.image);
       } else {
-        // If the image is a URL (existing image), do not append it to the form
-        console.log("Using existing image URL:", formData.image);
+        form.append("image", "");
       }
 
-      console.log("Form Data to be Sent:", formData); // Debugging log
-
       const url = id
-        ? `http://localhost:3000/api/products/${id}` // Update product if ID exists
-        : "http://localhost:3000/api/products/"; // Create product if no ID
+        ? `http://localhost:3000/api/products/${id}`
+        : "http://localhost:3000/api/products/";
 
       const method = id ? "put" : "post";
 
       const response = await axios[method](url, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      console.log("Backend Response:", response.data); // Debugging log
 
       if (response.status === 200 || response.status === 201) {
         setSuccess(id ? "Product updated successfully!" : "Product created successfully!");
@@ -128,10 +175,12 @@ function NewProduct({ onClose }) {
           image: null,
           stock: "",
         });
+        setImagePreview(null);
+
         if (onClose) {
-          onClose(); // Close the modal if it's used as a modal
+          onClose(response.data.updatedProduct);
         } else {
-          navigate("/products"); // Redirect to the product list page
+          navigate("/products");
         }
       } else {
         setError("Failed to save product.");
@@ -139,7 +188,7 @@ function NewProduct({ onClose }) {
     } catch (error) {
       console.error("Error:", error);
       if (error.response?.data?.message) {
-        setError(error.response.data.message); // Backend error message
+        setError(error.response.data.message);
       } else {
         setError("An error occurred while saving the product.");
       }
@@ -148,13 +197,12 @@ function NewProduct({ onClose }) {
 
   return (
     <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg relative">
-      {/* Close Button */}
       {onClose && (
         <button
-          onClick={onClose}
+          onClick={() => onClose()}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
         >
-          &times; {/* Close icon */}
+          &times;
         </button>
       )}
 
@@ -164,7 +212,6 @@ function NewProduct({ onClose }) {
       {error && <div className="text-red-500 mb-4">{error}</div>}
       {success && <div className="text-green-500 mb-4">{success}</div>}
 
-      {/* Ensure form fields are populated with data only when editing */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-gray-700">Product Name</label>
@@ -176,6 +223,9 @@ function NewProduct({ onClose }) {
             className="w-full p-2 border border-gray-300 rounded"
             required
           />
+          {validationErrors.name && (
+            <div className="text-red-500 text-sm">{validationErrors.name}</div>
+          )}
         </div>
 
         <div>
@@ -188,6 +238,9 @@ function NewProduct({ onClose }) {
             className="w-full p-2 border border-gray-300 rounded"
             required
           />
+          {validationErrors.price && (
+            <div className="text-red-500 text-sm">{validationErrors.price}</div>
+          )}
         </div>
 
         <div>
@@ -221,6 +274,13 @@ function NewProduct({ onClose }) {
 
         <div>
           <label className="block text-gray-700">Image</label>
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Product Preview"
+              className="w-32 h-32 object-cover mb-2 rounded"
+            />
+          )}
           <input
             type="file"
             name="image"
@@ -240,6 +300,9 @@ function NewProduct({ onClose }) {
             min="0"
             required
           />
+          {validationErrors.stock && (
+            <div className="text-red-500 text-sm">{validationErrors.stock}</div>
+          )}
         </div>
 
         <button
