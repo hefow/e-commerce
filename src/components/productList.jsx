@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import { FaSearch } from 'react-icons/fa';
 import axios from 'axios';
-import NewProduct from './NewProduct'; // Import the NewProduct component
+import NewProduct from '../components/newProduct'; // Import the NewProduct component
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
