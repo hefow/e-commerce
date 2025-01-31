@@ -11,6 +11,8 @@ import SignUp from "./components/SignUp";
 import Stock from "./components/Stock";
 import StockReport from "./components/StockReport";
 import AddCategory from "./components/AddCategory";
+import CategoriesTable from "./components/CategoriesTable";
+import NewCategory from "./components/NewCategory";
 
 function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -52,7 +54,15 @@ function App() {
               />
               <Route
                 path="/category"
-                element={<ProtectedRoute element={<AddCategory />}/>}
+                element={<ProtectedRoute element={<NewCategory />}/>}
+              />
+              <Route
+                path="/category/all"
+                element={<ProtectedRoute element={<CategoriesTable />}/>}
+              />
+              <Route
+                path="/category/:id"
+                element={<ProtectedRoute element={<NewCategory />}/>}
               />
               <Route
                 path="/stock"
