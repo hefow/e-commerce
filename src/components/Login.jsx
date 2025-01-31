@@ -35,7 +35,6 @@ export default function Login({ onLogin }) {
 
       // Update authentication state (passed as prop onLogin)
       onLogin(user);
-
       // Redirect to dashboard
       navigate('/');
     } catch (err) {

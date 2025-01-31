@@ -10,6 +10,7 @@ import Login from "./components/Login"; // Login Component
 import SignUp from "./components/SignUp";
 import Stock from "./components/Stock";
 import StockReport from "./components/StockReport";
+import AddCategory from "./components/AddCategory";
 
 function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -48,6 +49,10 @@ function App() {
               <Route
                 path="/"
                 element={<ProtectedRoute element={<Overview />} />}
+              />
+              <Route
+                path="/category"
+                element={<ProtectedRoute element={<AddCategory />}/>}
               />
               <Route
                 path="/stock"

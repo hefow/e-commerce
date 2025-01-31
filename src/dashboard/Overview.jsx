@@ -36,9 +36,7 @@ function Overview() {
         <div className="grid gap-4 md:grid-cols-2 ">   
           {/* Products Card */}
             
-      
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Products Card */}
+                  {/* Products Card */}
             <div className="rounded-lg bg-white p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -106,45 +104,8 @@ function Overview() {
             </div>
       
             {/* Pie Chart - Product Distribution by Category */}
-            <div className="col-span-full rounded-lg bg-white p-6 shadow-lg">
-              <h3 className="mb-4 text-lg font-semibold">Product Distribution by Category</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={productDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                    label
-                  >
-                    {productDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-      
-            {/* Bar Chart - Top Selling Products */}
-            <div className="col-span-full rounded-lg bg-white p-6 shadow-lg">
-              <h3 className="mb-4 text-lg font-semibold">Top Selling Products</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={topSellingProducts}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="sales" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          
+
         </div>
         );
 }
